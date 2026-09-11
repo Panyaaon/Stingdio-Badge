@@ -68,27 +68,6 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
   object-fit:contain
 }
 
-
-.delete-handle{
-  position:absolute;
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  background:#111;
-  color:#fff;
-  border:2px solid #fff;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  font:900 16px/1 Arial,sans-serif;
-  box-shadow:0 1px 4px rgba(0,0,0,.28);
-  z-index:80;
-  cursor:pointer;
-  touch-action:manipulation;
-  user-select:none;
-}
-.delete-handle.show{display:flex}
-
 @media(max-width:400px){.sticker-grid{grid-template-columns:repeat(6,1fr)}}
 @media print{
   body *{visibility:hidden!important}
@@ -110,7 +89,6 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
         <img id="photo" alt="">
         <div id="textObject"></div>
         <div id="stickerLayer"></div>
-        <button id="deleteHandle" class="delete-handle" type="button" aria-label="Delete">×</button>
         <div class="safe"></div>
       </div>
     </div>
@@ -122,83 +100,60 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
     <div class="field">
       <label>Font</label>
       <select id="fontSelect">
-<option>Arial Rounded MT Bold</option>
-<option>Comic Sans MS</option>
-<option>Trebuchet MS</option>
-<option>Marker Felt</option>
-<option>Chalkboard SE</option>
-<option>Noteworthy</option>
-<option>Snell Roundhand</option>
-<option>Brush Script MT</option>
-<option>Lucida Handwriting</option>
-<option>Segoe Print</option>
-<option>Segoe Script</option>
-<option>Bradley Hand</option>
-<option>Apple Chancery</option>
-<option>American Typewriter</option>
-<option>Cooper Black</option>
-<option>Gill Sans</option>
-<option>Century Gothic</option>
-<option>Futura</option>
-<option>Avenir Next Rounded</option>
-<option>Avenir Next</option>
-<option>Didot</option>
-<option>Baskerville</option>
-<option>Palatino</option>
-<option>Optima</option>
-<option>Copperplate</option>
-<option>Hoefler Text</option>
-<option>Georgia</option>
-<option>Bookman Old Style</option>
-<option>Franklin Gothic Medium</option>
-<option>Arial Black</option>
-<option>Verdana</option>
-<option>Tahoma</option>
-<option>Courier New</option>
-<option>Times New Roman</option>
-<option>Impact</option>
-<option>Rockwell</option>
-<option>Candara</option>
-<option>Corbel</option>
-<option>Garamond</option>
-<option>Perpetua</option>
-<option>Monaco</option>
-<option>Menlo</option>
-<option>Geneva</option>
-<option>Helvetica Neue</option>
-<option>Helvetica</option>
-<option>Papyrus</option>
-<option>Herculanum</option>
-<option>Party LET</option>
-<option>Trattatello</option>
-<option>Zapfino</option>
-</select>
+        <option>Arial Rounded MT Bold</option>
+        <option>Trebuchet MS</option>
+        <option>Comic Sans MS</option>
+        <option>Arial Black</option>
+        <option>Impact</option>
+        <option>Georgia</option>
+        <option>Verdana</option>
+        <option>Tahoma</option>
+        <option>Gill Sans</option>
+        <option>Century Gothic</option>
+        <option>Franklin Gothic Medium</option>
+        <option>Brush Script MT</option>
+        <option>Lucida Handwriting</option>
+        <option>Segoe Print</option>
+        <option>Segoe Script</option>
+        <option>Marker Felt</option>
+        <option>Chalkboard SE</option>
+        <option>Chalkduster</option>
+        <option>Noteworthy</option>
+        <option>Snell Roundhand</option>
+        <option>Hoefler Text</option>
+        <option>Palatino</option>
+        <option>Baskerville</option>
+        <option>Didot</option>
+        <option>American Typewriter</option>
+        <option>Futura</option>
+        <option>Optima</option>
+        <option>Copperplate</option>
+        <option>Courier New</option>
+        <option>Times New Roman</option>
+        <option>TH Sarabun New</option>
+        <option>Leelawadee UI</option>
+        <option>Angsana New</option>
+        <option>Cordia New</option>
+        <option>Browallia New</option>
+        <option>EucrosiaUPC</option>
+        <option>FreesiaUPC</option>
+        <option>IrisUPC</option>
+        <option>JasmineUPC</option>
+        <option>KodchiangUPC</option>
+        <option>LilyUPC</option>
+        <option>Microsoft Sans Serif</option>
+        <option>Segoe UI</option>
+      </select>
     </div>
 
 
-    
     <div class="text-options">
       <div class="field"><label>สีตัวอักษร</label><input id="textColor" type="color" value="#111111"></div>
-      <div class="field"><label>สีเงา</label><input id="shadowColor" type="color" value="#ff8fbd"></div>
+      <div class="field"><label>สีขอบ</label><input id="strokeColor" type="color" value="#ffffff"></div>
     </div>
 
-    <div class="text-options">
-      <div class="field">
-        <label>ระยะเงา</label>
-        <input id="shadowDistance" type="range" min="0" max="20" value="4" step="1">
-      </div>
-      <div class="field">
-        <label>องศาเงา <span id="shadowAngleValue">45°</span></label>
-        <input id="shadowAngle" type="range" min="0" max="360" value="45" step="1">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>ความฟุ้งของเงา</label>
-      <input id="shadowBlur" type="range" min="0" max="20" value="2" step="1">
-    </div>
-
-    
+    <div class="field"><label>ความหนาขอบตัวอักษร</label><input id="strokeWidth" type="range" min="0" max="12" value="0" step="1"></div>
+    <div class="hint">แตะข้อความบนตัวอย่างเพื่อเลือก • ลากได้ • ใช้ 2 นิ้วเพื่อย่อ/ขยายและหมุน</div>
   </div>
 
   <div class="card">
@@ -214,10 +169,11 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
     
     <label for="stickerUpload" class="upload-sticker-btn">＋ UPLOAD STICKER</label>
     <input id="stickerUpload" type="file" accept="image/png,image/jpeg,image/webp,image/*">
-    
+<div class="tools"><button onclick="bringFront()">BRING FRONT</button><button onclick="deleteSelected()">DELETE SELECTED</button></div>
+    <div class="hint">สติกเกอร์: แตะเพื่อเพิ่ม • 1 นิ้วลาก • 2 นิ้ว pinch เพื่อย่อ/ขยาย</div>
   </div>
 
-  
+  <div id="printStatus" class="status">PRINT จะพาไปหน้า Wi‑Fi ก่อน แล้วกลับมาพิมพ์ต่อ</div>
 </div>
 
 <div class="footer">
@@ -240,58 +196,19 @@ const textObject=document.getElementById('textObject');
 const textInput=document.getElementById('textInput');
 const fontSelect=document.getElementById('fontSelect');
 const textColor=document.getElementById('textColor');
-const shadowColor=document.getElementById('shadowColor');
-const shadowDistance=document.getElementById('shadowDistance');
-const shadowAngle=document.getElementById('shadowAngle');
-const shadowBlur=document.getElementById('shadowBlur');
-const shadowAngleValue=document.getElementById('shadowAngleValue');
+const strokeColor=document.getElementById('strokeColor');
+const strokeWidth=document.getElementById('strokeWidth');
 const printBtn=document.getElementById('printBtn');
-const printStatus={set textContent(v){}};
-const deleteHandle=document.getElementById('deleteHandle');
+const printStatus=document.getElementById('printStatus');
 
 function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function midpoint(a,b){return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
 function angle(a,b){return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
 
-function updateDeleteHandle(){
-  if(!selectedTarget){
-    deleteHandle.classList.remove('show');
-    return;
-  }
-  const sr=stage.getBoundingClientRect();
-  const tr=selectedTarget.getBoundingClientRect();
-  let x=tr.right-sr.left-10;
-  let y=tr.top-sr.top-10;
-  x=clamp(x,2,sr.width-26);
-  y=clamp(y,2,sr.height-26);
-  deleteHandle.style.left=x+'px';
-  deleteHandle.style.top=y+'px';
-  deleteHandle.classList.add('show');
-}
-deleteHandle.addEventListener('pointerdown',e=>{
-  e.stopPropagation();
-  e.preventDefault();
-});
-deleteHandle.addEventListener('click',e=>{
-  e.stopPropagation();
-  if(!selectedTarget)return;
-  if(selectedTarget===textObject){
-    textInput.value='';
-    textObject.textContent='';
-    textObject.classList.remove('selected');
-  }else{
-    selectedTarget.remove();
-  }
-  selectedSticker=null;
-  selectedTarget=null;
-  deleteHandle.classList.remove('show');
-});
-
-
 let base={x:0,y:0,scale:1};
 let basePointers=new Map(),baseStart=null;
-let selectedSticker=null,selectedTarget=null,zCounter=30,wifiStep=false;
+let selectedSticker=null,zCounter=30,wifiStep=false;
 
 /* Main photo */
 document.getElementById('photoUpload').addEventListener('change',e=>{
@@ -353,21 +270,20 @@ function updateText(){
   textObject.style.transform=`translate(-50%,-50%) scale(${txt.scale}) rotate(${txt.rotation}deg)`;
   textObject.style.fontFamily=`"${activeFont()}",sans-serif`;
   textObject.style.color=textColor.value;
-
-  const d=+shadowDistance.value;
-  const a=(+shadowAngle.value)*Math.PI/180;
-  const sx=Math.cos(a)*d;
-  const sy=Math.sin(a)*d;
-  const blur=+shadowBlur.value;
-  textObject.style.textShadow=`${sx}px ${sy}px ${blur}px ${shadowColor.value}`;
-  shadowAngleValue.textContent=shadowAngle.value+'°';
+  const w=+strokeWidth.value,c=strokeColor.value;
+  if(w>0){
+    textObject.style.textShadow=[
+      `${w}px 0 ${c}`,`${-w}px 0 ${c}`,`0 ${w}px ${c}`,`0 ${-w}px ${c}`,
+      `${w}px ${w}px ${c}`,`${-w}px ${w}px ${c}`,`${w}px ${-w}px ${c}`,`${-w}px ${-w}px ${c}`
+    ].join(',');
+  }else{textObject.style.textShadow='none'}
 }
-[textInput,fontSelect,textColor,shadowColor,shadowDistance,shadowAngle,shadowBlur].forEach(el=>el.addEventListener('input',updateText));
+[textInput,fontSelect,textColor,strokeColor,strokeWidth].forEach(el=>el.addEventListener('input',updateText));
 fontSelect.addEventListener('change',updateText);
 
 textObject.addEventListener('pointerdown',e=>{
   if(!textInput.value.trim())return;
-  e.stopPropagation(); deselectAll(); textObject.classList.add('selected'); selectedTarget=textObject; updateDeleteHandle();
+  e.stopPropagation(); deselectAll(); textObject.classList.add('selected');
   textObject.setPointerCapture(e.pointerId);
   txtPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(txtPointers.size===1){
@@ -393,7 +309,7 @@ textObject.addEventListener('pointermove',e=>{
     txt.x=clamp(txtStart.x+(m.x-txtStart.midpoint.x)/r.width*100,0,100);
     txt.y=clamp(txtStart.y+(m.y-txtStart.midpoint.y)/r.height*100,0,100);
   }
-  updateText(); updateDeleteHandle();
+  updateText();
 });
 function endTxt(e){
   txtPointers.delete(e.pointerId);
@@ -415,7 +331,6 @@ document.getElementById('stickerUpload').addEventListener('change',e=>{
   el.dataset.x='50';
   el.dataset.y='50';
   el.dataset.scale='1';
-  el.dataset.rotation='0';
   el.style.zIndex=++zCounter;
 
   el.onload=()=>{
@@ -431,7 +346,7 @@ document.getElementById('stickerUpload').addEventListener('change',e=>{
 function addEmoji(emoji){
   const el=document.createElement('div');
   el.className='place emoji'; el.textContent=emoji;
-  el.dataset.x='50'; el.dataset.y='50'; el.dataset.scale='1'; el.dataset.rotation='0';
+  el.dataset.x='50'; el.dataset.y='50'; el.dataset.scale='1';
   el.style.zIndex=++zCounter;
   layer.appendChild(el); prepareSticker(el); selectSticker(el);
 }
@@ -440,12 +355,12 @@ function prepareSticker(el){
   el.addEventListener('pointerdown',e=>{
     e.stopPropagation(); selectSticker(el); el.setPointerCapture(e.pointerId);
     el._pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
+    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale;
     if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s,rotation:r};
+      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s};
     }else if(el._pointers.size===2){
       const pts=[...el._pointers.values()];
-      el._start={distance:distance(pts[0],pts[1]),angle:angle(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x,y,scale:s,rotation:r};
+      el._start={distance:distance(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x,y,scale:s};
     }
   });
   el.addEventListener('pointermove',e=>{
@@ -457,34 +372,33 @@ function prepareSticker(el){
       el.dataset.x=clamp(el._start.x+(p.x-el._start.px)/r.width*100,0,100);
       el.dataset.y=clamp(el._start.y+(p.y-el._start.py)/r.height*100,0,100);
     }else if(el._pointers.size===2){
-      const pts=[...el._pointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
+      const pts=[...el._pointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]);
       el.dataset.scale=clamp(el._start.scale*(d/el._start.distance),.25,5);
-      el.dataset.rotation=el._start.rotation+(a-el._start.angle);
       el.dataset.x=clamp(el._start.x+(m.x-el._start.midpoint.x)/r.width*100,0,100);
       el.dataset.y=clamp(el._start.y+(m.y-el._start.midpoint.y)/r.height*100,0,100);
     }
-    updateSticker(el); updateDeleteHandle();
+    updateSticker(el);
   });
   function end(e){
     el._pointers.delete(e.pointerId);
-    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
+    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale;
     if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s,rotation:r};
+      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s};
     }else if(el._pointers.size===0){el._start=null}
   }
   el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
 }
-function updateSticker(el){el.style.left=el.dataset.x+'%';el.style.top=el.dataset.y+'%';el.style.transform=`translate(-50%,-50%) scale(${el.dataset.scale}) rotate(${el.dataset.rotation||0}deg)`}
-function selectSticker(el){deselectAll();selectedSticker=el;selectedTarget=el;el.classList.add('selected');updateDeleteHandle()}
-function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null;selectedTarget=null;deleteHandle.classList.remove('show')}
-
-else if(textObject.classList.contains('selected')){textInput.value='';updateText();textObject.classList.remove('selected')}}
+function updateSticker(el){el.style.left=el.dataset.x+'%';el.style.top=el.dataset.y+'%';el.style.transform=`translate(-50%,-50%) scale(${el.dataset.scale})`}
+function selectSticker(el){deselectAll();selectedSticker=el;el.classList.add('selected')}
+function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null}
+function bringFront(){if(selectedSticker)selectedSticker.style.zIndex=++zCounter}
+function deleteSelected(){if(selectedSticker){selectedSticker.remove();selectedSticker=null}else if(textObject.classList.contains('selected')){textInput.value='';updateText();textObject.classList.remove('selected')}}
 
 /* Reset */
 function resetAll(){
   base={x:0,y:0,scale:1}; updateBase();
   txt={x:50,y:50,scale:1,rotation:0};
-  textInput.value=''; textColor.value='#111111'; shadowColor.value='#ff8fbd'; shadowDistance.value='4'; shadowAngle.value='45'; shadowBlur.value='2';
+  textInput.value=''; textColor.value='#111111'; strokeColor.value='#ffffff'; strokeWidth.value='0';
   fontSelect.selectedIndex=0; updateText();
   layer.innerHTML=''; deselectAll();
   wifiStep=false; printBtn.textContent='PRINT'; printStatus.textContent='PRINT จะพาไปหน้า Wi‑Fi ก่อน แล้วกลับมาพิมพ์ต่อ';
@@ -508,27 +422,24 @@ async function renderCanvas(){
     ctx.scale(txt.scale,txt.scale);
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
     ctx.font=`900 ${Math.round(px*.09)}px "${activeFont()}",sans-serif`;
-    const d=+shadowDistance.value*(px/stage.clientWidth);
-    const a=(+shadowAngle.value)*Math.PI/180;
-    ctx.shadowColor=shadowColor.value;
-    ctx.shadowOffsetX=Math.cos(a)*d;
-    ctx.shadowOffsetY=Math.sin(a)*d;
-    ctx.shadowBlur=+shadowBlur.value*(px/stage.clientWidth);
-    ctx.fillStyle=textColor.value;
-    ctx.fillText(text,0,0,px*.72);
-    ctx.restore();
+    const sw=+strokeWidth.value;
+    if(sw>0){ctx.strokeStyle=strokeColor.value;ctx.lineWidth=Math.max(1,sw*(px/stage.clientWidth));ctx.strokeText(text,0,0,px*.72)}
+    ctx.fillStyle=textColor.value;ctx.fillText(text,0,0,px*.72);ctx.restore();
   }
 
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(const el of document.querySelectorAll('.place')){
-    const x=+el.dataset.x/100*px,y=+el.dataset.y/100*px,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
+    const x=+el.dataset.x/100*px,y=+el.dataset.y/100*px,s=+el.dataset.scale;
     if(el.classList.contains('uploaded')){
       const w=px*.23*s;
       const ratio=(el.naturalHeight/el.naturalWidth)||1;
       const h=w*ratio;
-      ctx.save();ctx.translate(x,y);ctx.rotate(r*Math.PI/180);ctx.drawImage(el,-w/2,-h/2,w,h);ctx.restore();
+      ctx.drawImage(el,x-w/2,y-h/2,w,h);
     }else{
-      ctx.save();ctx.translate(x,y);ctx.rotate(r*Math.PI/180);ctx.font=`${Math.round(px*.115*s)}px Arial`;ctx.fillText(el.textContent,0,0);ctx.restore();
+      ctx.save();
+      ctx.font=`${Math.round(px*.115*s)}px Arial`;
+      ctx.fillText(el.textContent,x,y);
+      ctx.restore();
     }
   }
   return c;
