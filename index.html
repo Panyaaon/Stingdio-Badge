@@ -18,7 +18,7 @@ h1{font-size:24px;margin:8px 0 4px}
 .card{background:#fff;border:2px solid #111;border-radius:22px;padding:14px;margin:14px 0;box-shadow:6px 6px 0 var(--soft)}
 .stage-wrap{display:flex;justify-content:center;padding:8px 0 2px}
 .stage{position:relative;width:min(84vw,390px);aspect-ratio:1;border-radius:50%;overflow:hidden;background:#eee;border:3px solid #111;touch-action:none}
-#photo{position:absolute;left:50%;top:50%;max-width:none;max-height:none;display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;transform-origin:center;z-index:1}
+#photo{touch-action:none;transform-origin:center center;position:absolute;left:50%;top:50%;max-width:none;max-height:none;display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;transform-origin:center;z-index:1}
 .safe{position:absolute;inset:10%;border:2px dashed rgba(255,95,162,.9);border-radius:50%;pointer-events:none;z-index:30}
 #stickerLayer{position:absolute;inset:0;z-index:12;pointer-events:none}
 .place{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(1);transform-origin:center;touch-action:none;pointer-events:auto;user-select:none;z-index:20}
@@ -68,6 +68,27 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
   object-fit:contain
 }
 
+
+.delete-handle{
+  position:absolute;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#111;
+  color:#fff;
+  border:2px solid #fff;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font:900 16px/1 Arial,sans-serif;
+  box-shadow:0 1px 4px rgba(0,0,0,.28);
+  z-index:80;
+  cursor:pointer;
+  touch-action:manipulation;
+  user-select:none;
+}
+.delete-handle.show{display:flex}
+
 @media(max-width:400px){.sticker-grid{grid-template-columns:repeat(6,1fr)}}
 @media print{
   body *{visibility:hidden!important}
@@ -89,6 +110,7 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
         <img id="photo" alt="">
         <div id="textObject"></div>
         <div id="stickerLayer"></div>
+        <button id="deleteHandle" class="delete-handle" type="button" aria-label="Delete">×</button>
         <div class="safe"></div>
       </div>
     </div>
@@ -100,60 +122,83 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
     <div class="field">
       <label>Font</label>
       <select id="fontSelect">
-        <option>Arial Rounded MT Bold</option>
-        <option>Trebuchet MS</option>
-        <option>Comic Sans MS</option>
-        <option>Arial Black</option>
-        <option>Impact</option>
-        <option>Georgia</option>
-        <option>Verdana</option>
-        <option>Tahoma</option>
-        <option>Gill Sans</option>
-        <option>Century Gothic</option>
-        <option>Franklin Gothic Medium</option>
-        <option>Brush Script MT</option>
-        <option>Lucida Handwriting</option>
-        <option>Segoe Print</option>
-        <option>Segoe Script</option>
-        <option>Marker Felt</option>
-        <option>Chalkboard SE</option>
-        <option>Chalkduster</option>
-        <option>Noteworthy</option>
-        <option>Snell Roundhand</option>
-        <option>Hoefler Text</option>
-        <option>Palatino</option>
-        <option>Baskerville</option>
-        <option>Didot</option>
-        <option>American Typewriter</option>
-        <option>Futura</option>
-        <option>Optima</option>
-        <option>Copperplate</option>
-        <option>Courier New</option>
-        <option>Times New Roman</option>
-        <option>TH Sarabun New</option>
-        <option>Leelawadee UI</option>
-        <option>Angsana New</option>
-        <option>Cordia New</option>
-        <option>Browallia New</option>
-        <option>EucrosiaUPC</option>
-        <option>FreesiaUPC</option>
-        <option>IrisUPC</option>
-        <option>JasmineUPC</option>
-        <option>KodchiangUPC</option>
-        <option>LilyUPC</option>
-        <option>Microsoft Sans Serif</option>
-        <option>Segoe UI</option>
-      </select>
+<option>Arial Rounded MT Bold</option>
+<option>Comic Sans MS</option>
+<option>Trebuchet MS</option>
+<option>Marker Felt</option>
+<option>Chalkboard SE</option>
+<option>Noteworthy</option>
+<option>Snell Roundhand</option>
+<option>Brush Script MT</option>
+<option>Lucida Handwriting</option>
+<option>Segoe Print</option>
+<option>Segoe Script</option>
+<option>Bradley Hand</option>
+<option>Apple Chancery</option>
+<option>American Typewriter</option>
+<option>Cooper Black</option>
+<option>Gill Sans</option>
+<option>Century Gothic</option>
+<option>Futura</option>
+<option>Avenir Next Rounded</option>
+<option>Avenir Next</option>
+<option>Didot</option>
+<option>Baskerville</option>
+<option>Palatino</option>
+<option>Optima</option>
+<option>Copperplate</option>
+<option>Hoefler Text</option>
+<option>Georgia</option>
+<option>Bookman Old Style</option>
+<option>Franklin Gothic Medium</option>
+<option>Arial Black</option>
+<option>Verdana</option>
+<option>Tahoma</option>
+<option>Courier New</option>
+<option>Times New Roman</option>
+<option>Impact</option>
+<option>Rockwell</option>
+<option>Candara</option>
+<option>Corbel</option>
+<option>Garamond</option>
+<option>Perpetua</option>
+<option>Monaco</option>
+<option>Menlo</option>
+<option>Geneva</option>
+<option>Helvetica Neue</option>
+<option>Helvetica</option>
+<option>Papyrus</option>
+<option>Herculanum</option>
+<option>Party LET</option>
+<option>Trattatello</option>
+<option>Zapfino</option>
+</select>
     </div>
 
 
+    
     <div class="text-options">
       <div class="field"><label>สีตัวอักษร</label><input id="textColor" type="color" value="#111111"></div>
-      <div class="field"><label>สีขอบ</label><input id="strokeColor" type="color" value="#ffffff"></div>
+      <div class="field"><label>สีเงา</label><input id="shadowColor" type="color" value="#ff8fbd"></div>
     </div>
 
-    <div class="field"><label>ความหนาขอบตัวอักษร</label><input id="strokeWidth" type="range" min="0" max="12" value="0" step="1"></div>
-    <div class="hint">แตะข้อความบนตัวอย่างเพื่อเลือก • ลากได้ • ใช้ 2 นิ้วเพื่อย่อ/ขยายและหมุน</div>
+    <div class="text-options">
+      <div class="field">
+        <label>ระยะเงา</label>
+        <input id="shadowDistance" type="range" min="0" max="20" value="4" step="1">
+      </div>
+      <div class="field">
+        <label>องศาเงา <span id="shadowAngleValue">45°</span></label>
+        <input id="shadowAngle" type="range" min="0" max="360" value="45" step="1">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>ความฟุ้งของเงา</label>
+      <input id="shadowBlur" type="range" min="0" max="20" value="2" step="1">
+    </div>
+
+    
   </div>
 
   <div class="card">
@@ -169,11 +214,10 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
     
     <label for="stickerUpload" class="upload-sticker-btn">＋ UPLOAD STICKER</label>
     <input id="stickerUpload" type="file" accept="image/png,image/jpeg,image/webp,image/*">
-<div class="tools"><button onclick="bringFront()">BRING FRONT</button><button onclick="deleteSelected()">DELETE SELECTED</button></div>
-    <div class="hint">สติกเกอร์: แตะเพื่อเพิ่ม • 1 นิ้วลาก • 2 นิ้ว pinch เพื่อย่อ/ขยาย</div>
+    
   </div>
 
-  <div id="printStatus" class="status">PRINT จะพาไปหน้า Wi‑Fi ก่อน แล้วกลับมาพิมพ์ต่อ</div>
+  
 </div>
 
 <div class="footer">
@@ -196,19 +240,67 @@ const textObject=document.getElementById('textObject');
 const textInput=document.getElementById('textInput');
 const fontSelect=document.getElementById('fontSelect');
 const textColor=document.getElementById('textColor');
-const strokeColor=document.getElementById('strokeColor');
-const strokeWidth=document.getElementById('strokeWidth');
+const shadowColor=document.getElementById('shadowColor');
+const shadowDistance=document.getElementById('shadowDistance');
+const shadowAngle=document.getElementById('shadowAngle');
+const shadowBlur=document.getElementById('shadowBlur');
+const shadowAngleValue=document.getElementById('shadowAngleValue');
 const printBtn=document.getElementById('printBtn');
-const printStatus=document.getElementById('printStatus');
+const printStatus={set textContent(v){}};
+const deleteHandle=document.getElementById('deleteHandle');
 
 function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function midpoint(a,b){return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
 function angle(a,b){return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
+function clampToCircleCenter(x,y){
+  const dx=x-50, dy=y-50;
+  const dist=Math.hypot(dx,dy);
+  const maxR=47;
+  if(dist<=maxR) return {x,y};
+  const k=maxR/dist;
+  return {x:50+dx*k,y:50+dy*k};
+}
+
+
+function updateDeleteHandle(){
+  if(!selectedTarget){
+    deleteHandle.classList.remove('show');
+    return;
+  }
+  const sr=stage.getBoundingClientRect();
+  const tr=selectedTarget.getBoundingClientRect();
+  let x=tr.right-sr.left-10;
+  let y=tr.top-sr.top-10;
+  x=clamp(x,2,sr.width-26);
+  y=clamp(y,2,sr.height-26);
+  deleteHandle.style.left=x+'px';
+  deleteHandle.style.top=y+'px';
+  deleteHandle.classList.add('show');
+}
+deleteHandle.addEventListener('pointerdown',e=>{
+  e.stopPropagation();
+  e.preventDefault();
+});
+deleteHandle.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(!selectedTarget)return;
+  if(selectedTarget===textObject){
+    textInput.value='';
+    textObject.textContent='';
+    textObject.classList.remove('selected');
+  }else{
+    selectedTarget.remove();
+  }
+  selectedSticker=null;
+  selectedTarget=null;
+  deleteHandle.classList.remove('show');
+});
+
 
 let base={x:0,y:0,scale:1};
 let basePointers=new Map(),baseStart=null;
-let selectedSticker=null,zCounter=30,wifiStep=false;
+let selectedSticker=null,selectedTarget=null,zCounter=30,wifiStep=false;
 
 /* Main photo */
 document.getElementById('photoUpload').addEventListener('change',e=>{
@@ -270,20 +362,21 @@ function updateText(){
   textObject.style.transform=`translate(-50%,-50%) scale(${txt.scale}) rotate(${txt.rotation}deg)`;
   textObject.style.fontFamily=`"${activeFont()}",sans-serif`;
   textObject.style.color=textColor.value;
-  const w=+strokeWidth.value,c=strokeColor.value;
-  if(w>0){
-    textObject.style.textShadow=[
-      `${w}px 0 ${c}`,`${-w}px 0 ${c}`,`0 ${w}px ${c}`,`0 ${-w}px ${c}`,
-      `${w}px ${w}px ${c}`,`${-w}px ${w}px ${c}`,`${w}px ${-w}px ${c}`,`${-w}px ${-w}px ${c}`
-    ].join(',');
-  }else{textObject.style.textShadow='none'}
+
+  const d=+shadowDistance.value;
+  const a=(+shadowAngle.value)*Math.PI/180;
+  const sx=Math.cos(a)*d;
+  const sy=Math.sin(a)*d;
+  const blur=+shadowBlur.value;
+  textObject.style.textShadow=`${sx}px ${sy}px ${blur}px ${shadowColor.value}`;
+  shadowAngleValue.textContent=shadowAngle.value+'°';
 }
-[textInput,fontSelect,textColor,strokeColor,strokeWidth].forEach(el=>el.addEventListener('input',updateText));
+[textInput,fontSelect,textColor,shadowColor,shadowDistance,shadowAngle,shadowBlur].forEach(el=>el.addEventListener('input',updateText));
 fontSelect.addEventListener('change',updateText);
 
 textObject.addEventListener('pointerdown',e=>{
   if(!textInput.value.trim())return;
-  e.stopPropagation(); deselectAll(); textObject.classList.add('selected');
+  e.stopPropagation(); deselectAll(); textObject.classList.add('selected'); selectedTarget=textObject; updateDeleteHandle();
   textObject.setPointerCapture(e.pointerId);
   txtPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(txtPointers.size===1){
@@ -300,16 +393,14 @@ textObject.addEventListener('pointermove',e=>{
   const r=stage.getBoundingClientRect();
   if(txtPointers.size===1){
     const p=[...txtPointers.values()][0];
-    txt.x=clamp(txtStart.x+(p.x-txtStart.px)/r.width*100,0,100);
-    txt.y=clamp(txtStart.y+(p.y-txtStart.py)/r.height*100,0,100);
+    (()=>{const p=clampToCircleCenter(txtStart.x+(p.x-txtStart.px)/r.width*100,txtStart.y+(p.y-txtStart.py)/r.height*100);txt.x=p.x;txt.y=p.y;})();
   }else if(txtPointers.size===2){
     const pts=[...txtPointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
     txt.scale=clamp(txtStart.scale*(d/txtStart.distance),.25,5);
     txt.rotation=txtStart.rotation+(a-txtStart.angle);
-    txt.x=clamp(txtStart.x+(m.x-txtStart.midpoint.x)/r.width*100,0,100);
-    txt.y=clamp(txtStart.y+(m.y-txtStart.midpoint.y)/r.height*100,0,100);
+    (()=>{const p=clampToCircleCenter(txtStart.x+(m.x-txtStart.midpoint.x)/r.width*100,txtStart.y+(m.y-txtStart.midpoint.y)/r.height*100);txt.x=p.x;txt.y=p.y;})();
   }
-  updateText();
+  updateText(); updateDeleteHandle();
 });
 function endTxt(e){
   txtPointers.delete(e.pointerId);
@@ -331,6 +422,8 @@ document.getElementById('stickerUpload').addEventListener('change',e=>{
   el.dataset.x='50';
   el.dataset.y='50';
   el.dataset.scale='1';
+  el.dataset.rotation='0';
+  el.dataset.rotation='0';
   el.style.zIndex=++zCounter;
 
   el.onload=()=>{
@@ -346,7 +439,7 @@ document.getElementById('stickerUpload').addEventListener('change',e=>{
 function addEmoji(emoji){
   const el=document.createElement('div');
   el.className='place emoji'; el.textContent=emoji;
-  el.dataset.x='50'; el.dataset.y='50'; el.dataset.scale='1';
+  el.dataset.x='50'; el.dataset.y='50'; el.dataset.scale='1'; el.dataset.rotation='0'; el.dataset.rotation='0';
   el.style.zIndex=++zCounter;
   layer.appendChild(el); prepareSticker(el); selectSticker(el);
 }
@@ -355,12 +448,12 @@ function prepareSticker(el){
   el.addEventListener('pointerdown',e=>{
     e.stopPropagation(); selectSticker(el); el.setPointerCapture(e.pointerId);
     el._pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale;
+    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
     if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s};
+      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s,rotation:r};
     }else if(el._pointers.size===2){
       const pts=[...el._pointers.values()];
-      el._start={distance:distance(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x,y,scale:s};
+      el._start={distance:distance(pts[0],pts[1]),angle:angle(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x,y,scale:s,rotation:r};
     }
   });
   el.addEventListener('pointermove',e=>{
@@ -369,36 +462,35 @@ function prepareSticker(el){
     const r=stage.getBoundingClientRect();
     if(el._pointers.size===1){
       const p=[...el._pointers.values()][0];
-      el.dataset.x=clamp(el._start.x+(p.x-el._start.px)/r.width*100,0,100);
-      el.dataset.y=clamp(el._start.y+(p.y-el._start.py)/r.height*100,0,100);
+      (()=>{const p=clampToCircleCenter(el._start.x+(p.x-el._start.px)/r.width*100,el._start.y+(p.y-el._start.py)/r.height*100);el.dataset.x=p.x;el.dataset.y=p.y;})();
     }else if(el._pointers.size===2){
-      const pts=[...el._pointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]);
+      const pts=[...el._pointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
       el.dataset.scale=clamp(el._start.scale*(d/el._start.distance),.25,5);
-      el.dataset.x=clamp(el._start.x+(m.x-el._start.midpoint.x)/r.width*100,0,100);
-      el.dataset.y=clamp(el._start.y+(m.y-el._start.midpoint.y)/r.height*100,0,100);
+      el.dataset.rotation=el._start.rotation+(a-el._start.angle);
+      (()=>{const p=clampToCircleCenter(el._start.x+(m.x-el._start.midpoint.x)/r.width*100,el._start.y+(m.y-el._start.midpoint.y)/r.height*100);el.dataset.x=p.x;el.dataset.y=p.y;})();
     }
-    updateSticker(el);
+    updateSticker(el); updateDeleteHandle();
   });
   function end(e){
     el._pointers.delete(e.pointerId);
-    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale;
+    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
     if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s};
+      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s,rotation:r};
     }else if(el._pointers.size===0){el._start=null}
   }
   el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
 }
-function updateSticker(el){el.style.left=el.dataset.x+'%';el.style.top=el.dataset.y+'%';el.style.transform=`translate(-50%,-50%) scale(${el.dataset.scale})`}
-function selectSticker(el){deselectAll();selectedSticker=el;el.classList.add('selected')}
-function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null}
-function bringFront(){if(selectedSticker)selectedSticker.style.zIndex=++zCounter}
-function deleteSelected(){if(selectedSticker){selectedSticker.remove();selectedSticker=null}else if(textObject.classList.contains('selected')){textInput.value='';updateText();textObject.classList.remove('selected')}}
+function updateSticker(el){el.style.left=el.dataset.x+'%';el.style.top=el.dataset.y+'%';el.style.transform=`translate(-50%,-50%) scale(${el.dataset.scale}) rotate(${el.dataset.rotation||0}deg)`}
+function selectSticker(el){deselectAll();selectedSticker=el;selectedTarget=el;el.classList.add('selected');updateDeleteHandle()}
+function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null;selectedTarget=null;deleteHandle.classList.remove('show')}
+
+else if(textObject.classList.contains('selected')){textInput.value='';updateText();textObject.classList.remove('selected')}}
 
 /* Reset */
 function resetAll(){
   base={x:0,y:0,scale:1}; updateBase();
   txt={x:50,y:50,scale:1,rotation:0};
-  textInput.value=''; textColor.value='#111111'; strokeColor.value='#ffffff'; strokeWidth.value='0';
+  textInput.value=''; textColor.value='#111111'; shadowColor.value='#ff8fbd'; shadowDistance.value='4'; shadowAngle.value='45'; shadowBlur.value='2';
   fontSelect.selectedIndex=0; updateText();
   layer.innerHTML=''; deselectAll();
   wifiStep=false; printBtn.textContent='PRINT'; printStatus.textContent='PRINT จะพาไปหน้า Wi‑Fi ก่อน แล้วกลับมาพิมพ์ต่อ';
@@ -422,24 +514,27 @@ async function renderCanvas(){
     ctx.scale(txt.scale,txt.scale);
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
     ctx.font=`900 ${Math.round(px*.09)}px "${activeFont()}",sans-serif`;
-    const sw=+strokeWidth.value;
-    if(sw>0){ctx.strokeStyle=strokeColor.value;ctx.lineWidth=Math.max(1,sw*(px/stage.clientWidth));ctx.strokeText(text,0,0,px*.72)}
-    ctx.fillStyle=textColor.value;ctx.fillText(text,0,0,px*.72);ctx.restore();
+    const d=+shadowDistance.value*(px/stage.clientWidth);
+    const a=(+shadowAngle.value)*Math.PI/180;
+    ctx.shadowColor=shadowColor.value;
+    ctx.shadowOffsetX=Math.cos(a)*d;
+    ctx.shadowOffsetY=Math.sin(a)*d;
+    ctx.shadowBlur=+shadowBlur.value*(px/stage.clientWidth);
+    ctx.fillStyle=textColor.value;
+    ctx.fillText(text,0,0,px*.72);
+    ctx.restore();
   }
 
   ctx.textAlign='center';ctx.textBaseline='middle';
   for(const el of document.querySelectorAll('.place')){
-    const x=+el.dataset.x/100*px,y=+el.dataset.y/100*px,s=+el.dataset.scale;
+    const x=+el.dataset.x/100*px,y=+el.dataset.y/100*px,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
     if(el.classList.contains('uploaded')){
       const w=px*.23*s;
       const ratio=(el.naturalHeight/el.naturalWidth)||1;
       const h=w*ratio;
-      ctx.drawImage(el,x-w/2,y-h/2,w,h);
+      ctx.save();ctx.translate(x,y);ctx.rotate(r*Math.PI/180);ctx.drawImage(el,-w/2,-h/2,w,h);ctx.restore();
     }else{
-      ctx.save();
-      ctx.font=`${Math.round(px*.115*s)}px Arial`;
-      ctx.fillText(el.textContent,x,y);
-      ctx.restore();
+      ctx.save();ctx.translate(x,y);ctx.rotate(r*Math.PI/180);ctx.font=`${Math.round(px*.115*s)}px Arial`;ctx.fillText(el.textContent,0,0);ctx.restore();
     }
   }
   return c;
@@ -462,6 +557,101 @@ async function printFlow(){
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&wifiStep){printBtn.textContent='PRINT NOW';printStatus.textContent='ถ้าเชื่อม Wi‑Fi แล้ว กด PRINT NOW เพื่อเลือกเครื่องพิมพ์'}});
 
 updateText();
+
+// Unified free gesture for main photo: drag with one finger, pinch + rotate with two.
+(function(){
+  const img = document.getElementById('photo') || document.getElementById('mainPhoto') || document.querySelector('.photo');
+  if(!img) return;
+  img.style.touchAction='none';
+  img.style.transformOrigin='center center';
+  const pointers=new Map();
+  let start=null;
+
+  function current(){
+    return {
+      x:+(img.dataset.x||50),
+      y:+(img.dataset.y||50),
+      scale:+(img.dataset.scale||1),
+      rotation:+(img.dataset.rotation||0)
+    };
+  }
+  function render(){
+    img.style.left=(img.dataset.x||50)+'%';
+    img.style.top=(img.dataset.y||50)+'%';
+    img.style.transform=`translate(-50%,-50%) scale(${img.dataset.scale||1}) rotate(${img.dataset.rotation||0}deg)`;
+  }
+  function pt(e){return {x:e.clientX,y:e.clientY}}
+  img.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    img.setPointerCapture?.(e.pointerId);
+    pointers.set(e.pointerId,pt(e));
+    const s=current();
+    if(pointers.size===1){
+      const p=[...pointers.values()][0];
+      start={mode:1,px:p.x,py:p.y,...s};
+    }else if(pointers.size===2){
+      const ps=[...pointers.values()];
+      start={
+        mode:2,
+        distance:distance(ps[0],ps[1]),
+        angle:angle(ps[0],ps[1]),
+        midpoint:midpoint(ps[0],ps[1]),
+        ...s
+      };
+    }
+  });
+  img.addEventListener('pointermove',e=>{
+    if(!pointers.has(e.pointerId)||!start)return;
+    pointers.set(e.pointerId,pt(e));
+    const r=stage.getBoundingClientRect();
+
+    if(pointers.size===1 && start.mode===1){
+      const p=[...pointers.values()][0];
+      const pos=clampToCircleCenter(
+        start.x+(p.x-start.px)/r.width*100,
+        start.y+(p.y-start.py)/r.height*100
+      );
+      img.dataset.x=pos.x;
+      img.dataset.y=pos.y;
+    }else if(pointers.size===2){
+      const ps=[...pointers.values()];
+      const d=distance(ps[0],ps[1]);
+      const a=angle(ps[0],ps[1]);
+      const m=midpoint(ps[0],ps[1]);
+      img.dataset.scale=clamp(start.scale*(d/start.distance),.15,8);
+      img.dataset.rotation=start.rotation+(a-start.angle);
+      const pos=clampToCircleCenter(
+        start.x+(m.x-start.midpoint.x)/r.width*100,
+        start.y+(m.y-start.midpoint.y)/r.height*100
+      );
+      img.dataset.x=pos.x;
+      img.dataset.y=pos.y;
+    }
+    render();
+  });
+  function end(e){
+    pointers.delete(e.pointerId);
+    const s=current();
+    if(pointers.size===1){
+      const p=[...pointers.values()][0];
+      start={mode:1,px:p.x,py:p.y,...s};
+    }else if(pointers.size===2){
+      const ps=[...pointers.values()];
+      start={mode:2,distance:distance(ps[0],ps[1]),angle:angle(ps[0],ps[1]),midpoint:midpoint(ps[0],ps[1]),...s};
+    }else start=null;
+  }
+  img.addEventListener('pointerup',end);
+  img.addEventListener('pointercancel',end);
+  img.addEventListener('lostpointercapture',end);
+
+  // Initial position always in the center of the circular editor.
+  img.dataset.x=img.dataset.x||'50';
+  img.dataset.y=img.dataset.y||'50';
+  img.dataset.scale=img.dataset.scale||'1';
+  img.dataset.rotation=img.dataset.rotation||'0';
+  render();
+})();
+
 </script>
 </body>
 </html>
