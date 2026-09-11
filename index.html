@@ -18,7 +18,7 @@ h1{font-size:24px;margin:8px 0 4px}
 .card{background:#fff;border:2px solid #111;border-radius:22px;padding:14px;margin:14px 0;box-shadow:6px 6px 0 var(--soft)}
 .stage-wrap{display:flex;justify-content:center;padding:8px 0 2px}
 .stage{position:relative;width:min(84vw,390px);aspect-ratio:1;border-radius:50%;overflow:hidden;background:#eee;border:3px solid #111;touch-action:none}
-#photo{touch-action:none;transform-origin:center center;position:absolute;left:50%;top:50%;max-width:none;max-height:none;display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;transform-origin:center;z-index:1}
+#photo{position:absolute;left:50%;top:50%;max-width:none;max-height:none;display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;transform-origin:center;z-index:1}
 .safe{position:absolute;inset:10%;border:2px dashed rgba(255,95,162,.9);border-radius:50%;pointer-events:none;z-index:30}
 #stickerLayer{position:absolute;inset:0;z-index:12;pointer-events:none}
 .place{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(1);transform-origin:center;touch-action:none;pointer-events:auto;user-select:none;z-index:20}
@@ -253,15 +253,6 @@ function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function midpoint(a,b){return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
 function angle(a,b){return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
-function clampToCircleCenter(x,y){
-  const dx=x-50, dy=y-50;
-  const dist=Math.hypot(dx,dy);
-  const maxR=47;
-  if(dist<=maxR) return {x,y};
-  const k=maxR/dist;
-  return {x:50+dx*k,y:50+dy*k};
-}
-
 
 function updateDeleteHandle(){
   if(!selectedTarget){
@@ -298,23 +289,34 @@ deleteHandle.addEventListener('click',e=>{
 });
 
 
-let base={x:0,y:0,scale:1};
+let base={x:0,y:0,scale:1,rotation:0};
 let basePointers=new Map(),baseStart=null;
 let selectedSticker=null,selectedTarget=null,zCounter=30,wifiStep=false;
 
 /* Main photo */
 document.getElementById('photoUpload').addEventListener('change',e=>{
-  const file=e.target.files[0]; if(!file)return;
-  photo.src=URL.createObjectURL(file);
-  photo.onload=()=>{
-    photo.style.display='block';
-    const cover=Math.max(stage.clientWidth/photo.naturalWidth,stage.clientHeight/photo.naturalHeight);
-    photo.style.width=(photo.naturalWidth*cover)+'px';
-    photo.style.height=(photo.naturalHeight*cover)+'px';
-    base={x:0,y:0,scale:1}; updateBase();
+  const file=e.target.files && e.target.files[0];
+  if(!file)return;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    photo.onload=()=>{
+      photo.style.display='block';
+      const sw=stage.clientWidth || 390;
+      const sh=stage.clientHeight || 390;
+      const cover=Math.max(sw/photo.naturalWidth,sh/photo.naturalHeight);
+      photo.style.width=(photo.naturalWidth*cover)+'px';
+      photo.style.height=(photo.naturalHeight*cover)+'px';
+      photo.style.left='50%';
+      photo.style.top='50%';
+      base={x:0,y:0,scale:1,rotation:0};
+      updateBase();
+    };
+    photo.src=ev.target.result;
   };
+  reader.readAsDataURL(file);
 });
-function updateBase(){photo.style.transform=`translate(calc(-50% + ${base.x}px),calc(-50% + ${base.y}px)) scale(${base.scale})`}
+function updateBase(){photo.style.transform=`translate(calc(-50% + ${base.x}px),calc(-50% + ${base.y}px)) scale(${base.scale}) rotate(${base.rotation}deg)`}
 
 stage.addEventListener('pointerdown',e=>{
   if(e.target.classList.contains('place')||e.target.id==='textObject'||!photo.src)return;
@@ -323,10 +325,10 @@ stage.addEventListener('pointerdown',e=>{
   basePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(basePointers.size===1){
     const p=[...basePointers.values()][0];
-    baseStart={px:p.x,py:p.y,x:base.x,y:base.y,scale:base.scale};
+    baseStart={px:p.x,py:p.y,x:base.x,y:base.y,scale:base.scale,rotation:base.rotation};
   }else if(basePointers.size===2){
     const pts=[...basePointers.values()];
-    baseStart={distance:distance(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x:base.x,y:base.y,scale:base.scale};
+    baseStart={distance:distance(pts[0],pts[1]),angle:angle(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x:base.x,y:base.y,scale:base.scale,rotation:base.rotation};
   }
 });
 stage.addEventListener('pointermove',e=>{
@@ -336,8 +338,9 @@ stage.addEventListener('pointermove',e=>{
     const p=[...basePointers.values()][0];
     base.x=baseStart.x+(p.x-baseStart.px); base.y=baseStart.y+(p.y-baseStart.py); updateBase();
   }else if(basePointers.size===2){
-    const pts=[...basePointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]);
-    base.scale=clamp(baseStart.scale*(d/baseStart.distance),.4,5);
+    const pts=[...basePointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
+    base.scale=clamp(baseStart.scale*(d/baseStart.distance),.25,6);
+    base.rotation=baseStart.rotation+(a-baseStart.angle);
     base.x=baseStart.x+(m.x-baseStart.midpoint.x); base.y=baseStart.y+(m.y-baseStart.midpoint.y); updateBase();
   }
 });
@@ -345,7 +348,7 @@ function endBase(e){
   basePointers.delete(e.pointerId);
   if(basePointers.size===1){
     const p=[...basePointers.values()][0];
-    baseStart={px:p.x,py:p.y,x:base.x,y:base.y,scale:base.scale};
+    baseStart={px:p.x,py:p.y,x:base.x,y:base.y,scale:base.scale,rotation:base.rotation};
   }else if(basePointers.size===0){baseStart=null}
 }
 stage.addEventListener('pointerup',endBase); stage.addEventListener('pointercancel',endBase);
@@ -393,12 +396,14 @@ textObject.addEventListener('pointermove',e=>{
   const r=stage.getBoundingClientRect();
   if(txtPointers.size===1){
     const p=[...txtPointers.values()][0];
-    (()=>{const p=clampToCircleCenter(txtStart.x+(p.x-txtStart.px)/r.width*100,txtStart.y+(p.y-txtStart.py)/r.height*100);txt.x=p.x;txt.y=p.y;})();
+    txt.x=clamp(txtStart.x+(p.x-txtStart.px)/r.width*100,0,100);
+    txt.y=clamp(txtStart.y+(p.y-txtStart.py)/r.height*100,0,100);
   }else if(txtPointers.size===2){
     const pts=[...txtPointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
     txt.scale=clamp(txtStart.scale*(d/txtStart.distance),.25,5);
     txt.rotation=txtStart.rotation+(a-txtStart.angle);
-    (()=>{const p=clampToCircleCenter(txtStart.x+(m.x-txtStart.midpoint.x)/r.width*100,txtStart.y+(m.y-txtStart.midpoint.y)/r.height*100);txt.x=p.x;txt.y=p.y;})();
+    txt.x=clamp(txtStart.x+(m.x-txtStart.midpoint.x)/r.width*100,0,100);
+    txt.y=clamp(txtStart.y+(m.y-txtStart.midpoint.y)/r.height*100,0,100);
   }
   updateText(); updateDeleteHandle();
 });
@@ -423,7 +428,6 @@ document.getElementById('stickerUpload').addEventListener('change',e=>{
   el.dataset.y='50';
   el.dataset.scale='1';
   el.dataset.rotation='0';
-  el.dataset.rotation='0';
   el.style.zIndex=++zCounter;
 
   el.onload=()=>{
@@ -439,7 +443,7 @@ document.getElementById('stickerUpload').addEventListener('change',e=>{
 function addEmoji(emoji){
   const el=document.createElement('div');
   el.className='place emoji'; el.textContent=emoji;
-  el.dataset.x='50'; el.dataset.y='50'; el.dataset.scale='1'; el.dataset.rotation='0'; el.dataset.rotation='0';
+  el.dataset.x='50'; el.dataset.y='50'; el.dataset.scale='1'; el.dataset.rotation='0';
   el.style.zIndex=++zCounter;
   layer.appendChild(el); prepareSticker(el); selectSticker(el);
 }
@@ -462,12 +466,14 @@ function prepareSticker(el){
     const r=stage.getBoundingClientRect();
     if(el._pointers.size===1){
       const p=[...el._pointers.values()][0];
-      (()=>{const p=clampToCircleCenter(el._start.x+(p.x-el._start.px)/r.width*100,el._start.y+(p.y-el._start.py)/r.height*100);el.dataset.x=p.x;el.dataset.y=p.y;})();
+      el.dataset.x=clamp(el._start.x+(p.x-el._start.px)/r.width*100,0,100);
+      el.dataset.y=clamp(el._start.y+(p.y-el._start.py)/r.height*100,0,100);
     }else if(el._pointers.size===2){
       const pts=[...el._pointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
       el.dataset.scale=clamp(el._start.scale*(d/el._start.distance),.25,5);
       el.dataset.rotation=el._start.rotation+(a-el._start.angle);
-      (()=>{const p=clampToCircleCenter(el._start.x+(m.x-el._start.midpoint.x)/r.width*100,el._start.y+(m.y-el._start.midpoint.y)/r.height*100);el.dataset.x=p.x;el.dataset.y=p.y;})();
+      el.dataset.x=clamp(el._start.x+(m.x-el._start.midpoint.x)/r.width*100,0,100);
+      el.dataset.y=clamp(el._start.y+(m.y-el._start.midpoint.y)/r.height*100,0,100);
     }
     updateSticker(el); updateDeleteHandle();
   });
@@ -483,17 +489,14 @@ function prepareSticker(el){
 function updateSticker(el){el.style.left=el.dataset.x+'%';el.style.top=el.dataset.y+'%';el.style.transform=`translate(-50%,-50%) scale(${el.dataset.scale}) rotate(${el.dataset.rotation||0}deg)`}
 function selectSticker(el){deselectAll();selectedSticker=el;selectedTarget=el;el.classList.add('selected');updateDeleteHandle()}
 function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null;selectedTarget=null;deleteHandle.classList.remove('show')}
-
-else if(textObject.classList.contains('selected')){textInput.value='';updateText();textObject.classList.remove('selected')}}
-
 /* Reset */
 function resetAll(){
-  base={x:0,y:0,scale:1}; updateBase();
+  base={x:0,y:0,scale:1,rotation:0}; updateBase();
   txt={x:50,y:50,scale:1,rotation:0};
   textInput.value=''; textColor.value='#111111'; shadowColor.value='#ff8fbd'; shadowDistance.value='4'; shadowAngle.value='45'; shadowBlur.value='2';
   fontSelect.selectedIndex=0; updateText();
   layer.innerHTML=''; deselectAll();
-  wifiStep=false; printBtn.textContent='PRINT'; printStatus.textContent='PRINT จะพาไปหน้า Wi‑Fi ก่อน แล้วกลับมาพิมพ์ต่อ';
+  wifiStep=false; printBtn.textContent='PRINT'; printStatus.textContent='';
 }
 
 /* Render */
@@ -504,7 +507,7 @@ async function renderCanvas(){
   c.width=c.height=px;
   ctx.save();ctx.beginPath();ctx.arc(px/2,px/2,px/2,0,Math.PI*2);ctx.clip();ctx.fillStyle='#eee';ctx.fillRect(0,0,px,px);
   const f=px/stage.clientWidth,pw=parseFloat(photo.style.width)*f,ph=parseFloat(photo.style.height)*f;
-  ctx.translate(px/2+base.x*f,px/2+base.y*f);ctx.scale(base.scale,base.scale);ctx.drawImage(photo,-pw/2,-ph/2,pw,ph);ctx.restore();
+  ctx.translate(px/2+base.x*f,px/2+base.y*f);ctx.rotate(base.rotation*Math.PI/180);ctx.scale(base.scale,base.scale);ctx.drawImage(photo,-pw/2,-ph/2,pw,ph);ctx.restore();
 
   const text=textInput.value.trim();
   if(text){
@@ -557,101 +560,6 @@ async function printFlow(){
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&wifiStep){printBtn.textContent='PRINT NOW';printStatus.textContent='ถ้าเชื่อม Wi‑Fi แล้ว กด PRINT NOW เพื่อเลือกเครื่องพิมพ์'}});
 
 updateText();
-
-// Unified free gesture for main photo: drag with one finger, pinch + rotate with two.
-(function(){
-  const img = document.getElementById('photo') || document.getElementById('mainPhoto') || document.querySelector('.photo');
-  if(!img) return;
-  img.style.touchAction='none';
-  img.style.transformOrigin='center center';
-  const pointers=new Map();
-  let start=null;
-
-  function current(){
-    return {
-      x:+(img.dataset.x||50),
-      y:+(img.dataset.y||50),
-      scale:+(img.dataset.scale||1),
-      rotation:+(img.dataset.rotation||0)
-    };
-  }
-  function render(){
-    img.style.left=(img.dataset.x||50)+'%';
-    img.style.top=(img.dataset.y||50)+'%';
-    img.style.transform=`translate(-50%,-50%) scale(${img.dataset.scale||1}) rotate(${img.dataset.rotation||0}deg)`;
-  }
-  function pt(e){return {x:e.clientX,y:e.clientY}}
-  img.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    img.setPointerCapture?.(e.pointerId);
-    pointers.set(e.pointerId,pt(e));
-    const s=current();
-    if(pointers.size===1){
-      const p=[...pointers.values()][0];
-      start={mode:1,px:p.x,py:p.y,...s};
-    }else if(pointers.size===2){
-      const ps=[...pointers.values()];
-      start={
-        mode:2,
-        distance:distance(ps[0],ps[1]),
-        angle:angle(ps[0],ps[1]),
-        midpoint:midpoint(ps[0],ps[1]),
-        ...s
-      };
-    }
-  });
-  img.addEventListener('pointermove',e=>{
-    if(!pointers.has(e.pointerId)||!start)return;
-    pointers.set(e.pointerId,pt(e));
-    const r=stage.getBoundingClientRect();
-
-    if(pointers.size===1 && start.mode===1){
-      const p=[...pointers.values()][0];
-      const pos=clampToCircleCenter(
-        start.x+(p.x-start.px)/r.width*100,
-        start.y+(p.y-start.py)/r.height*100
-      );
-      img.dataset.x=pos.x;
-      img.dataset.y=pos.y;
-    }else if(pointers.size===2){
-      const ps=[...pointers.values()];
-      const d=distance(ps[0],ps[1]);
-      const a=angle(ps[0],ps[1]);
-      const m=midpoint(ps[0],ps[1]);
-      img.dataset.scale=clamp(start.scale*(d/start.distance),.15,8);
-      img.dataset.rotation=start.rotation+(a-start.angle);
-      const pos=clampToCircleCenter(
-        start.x+(m.x-start.midpoint.x)/r.width*100,
-        start.y+(m.y-start.midpoint.y)/r.height*100
-      );
-      img.dataset.x=pos.x;
-      img.dataset.y=pos.y;
-    }
-    render();
-  });
-  function end(e){
-    pointers.delete(e.pointerId);
-    const s=current();
-    if(pointers.size===1){
-      const p=[...pointers.values()][0];
-      start={mode:1,px:p.x,py:p.y,...s};
-    }else if(pointers.size===2){
-      const ps=[...pointers.values()];
-      start={mode:2,distance:distance(ps[0],ps[1]),angle:angle(ps[0],ps[1]),midpoint:midpoint(ps[0],ps[1]),...s};
-    }else start=null;
-  }
-  img.addEventListener('pointerup',end);
-  img.addEventListener('pointercancel',end);
-  img.addEventListener('lostpointercapture',end);
-
-  // Initial position always in the center of the circular editor.
-  img.dataset.x=img.dataset.x||'50';
-  img.dataset.y=img.dataset.y||'50';
-  img.dataset.scale=img.dataset.scale||'1';
-  img.dataset.rotation=img.dataset.rotation||'0';
-  render();
-})();
-
 </script>
 </body>
 </html>
