@@ -89,46 +89,20 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
 }
 .delete-handle.show{display:flex}
 
-
-.size-picker{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin:12px 0 4px
-}
-.size-btn{
-  background:#fff;
-  border:2px solid #111;
-  border-radius:999px;
-  padding:10px 6px;
-  font-weight:900
-}
-.size-btn.active{
-  background:var(--pink);
-  color:#fff
-}
-
 @media(max-width:400px){.sticker-grid{grid-template-columns:repeat(6,1fr)}}
 @media print{
   body *{visibility:hidden!important}
   #printArea,#printArea *{visibility:visible!important}
   #printArea{display:flex!important;position:absolute;left:0;top:0;width:100%;justify-content:center;padding-top:10mm}
-  #printImg{object-fit:contain}
+  #printImg{width:58mm;height:58mm;object-fit:contain}
 }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="brand"><div class="logo">STING<span>DiO</span></div><div class="pill">BADGE MAKER • <span id="sizeLabel">58</span> MM</div></div>
+  <div class="brand"><div class="logo">STING<span>DiO</span></div><div class="pill">BADGE MAKER • 58 MM</div></div>
   <h1>Design your own badge ✦</h1>
   <div class="sub">รูปหลัก: 1 นิ้วลาก / 2 นิ้ว pinch ซูม • ข้อความ: 1 นิ้วลาก / 2 นิ้วซูมและหมุน</div>
-
-
-  <div class="size-picker">
-    <button class="size-btn" data-mm="25" onclick="setBadgeSize(25)">25 mm</button>
-    <button class="size-btn" data-mm="32" onclick="setBadgeSize(32)">32 mm</button>
-    <button class="size-btn active" data-mm="58" onclick="setBadgeSize(58)">58 mm</button>
-  </div>
 
   <div class="card">
     <div class="stage-wrap">
@@ -258,7 +232,7 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
 <div id="printArea" style="display:none"><img id="printImg" alt=""></div>
 
 <script>
-let BADGE_MM=58;
+const BADGE_MM=58;
 const stage=document.getElementById('stage');
 const photo=document.getElementById('photo');
 const layer=document.getElementById('stickerLayer');
@@ -276,32 +250,6 @@ const printStatus={set textContent(v){}};
 const deleteHandle=document.getElementById('deleteHandle');
 
 function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
-
-function setBadgeSize(mm){
-  BADGE_MM=mm;
-  document.getElementById('sizeLabel').textContent=mm;
-  document.querySelectorAll('.size-btn').forEach(b=>{
-    b.classList.toggle('active',+b.dataset.mm===mm);
-  });
-
-  /* 58 mm is the largest preview. 25/32 mm circles scale proportionally. */
-  const maxPreview=Math.min(window.innerWidth*0.84,390);
-  const diameter=maxPreview*(mm/58);
-  stage.style.width=diameter+'px';
-
-  /* Keep the photo covering the newly sized circle. */
-  if(photo.src && photo.naturalWidth){
-    const cover=Math.max(
-      stage.clientWidth/photo.naturalWidth,
-      stage.clientHeight/photo.naturalHeight
-    );
-    photo.style.width=(photo.naturalWidth*cover)+'px';
-    photo.style.height=(photo.naturalHeight*cover)+'px';
-    base={x:0,y:0,scale:1};
-    updateBase();
-  }
-}
-
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function midpoint(a,b){return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
 function angle(a,b){return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
@@ -586,7 +534,7 @@ async function renderCanvas(){
   return c;
 }
 async function savePNG(){
-  try{const c=await renderCanvas();c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`STINGDiO_badge_${BADGE_MM}mm.png`;a.click()},'image/png')}catch(e){}
+  try{const c=await renderCanvas();c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='STINGDiO_badge_58mm.png';a.click()},'image/png')}catch(e){}
 }
 
 /* Print */
@@ -598,12 +546,11 @@ function openWifiSettings(){
 }
 async function printFlow(){
   if(!wifiStep){wifiStep=true;printBtn.textContent='PRINT NOW';printStatus.textContent='เชื่อม Wi‑Fi เดียวกับเครื่องพิมพ์ แล้วกลับมากด PRINT NOW';openWifiSettings();return}
-  try{const c=await renderCanvas(),img=document.getElementById('printImg');img.src=c.toDataURL('image/png');img.style.width=BADGE_MM+'mm';img.style.height=BADGE_MM+'mm';img.onload=()=>window.print()}catch(e){}
+  try{const c=await renderCanvas(),img=document.getElementById('printImg');img.src=c.toDataURL('image/png');img.onload=()=>window.print()}catch(e){}
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&wifiStep){printBtn.textContent='PRINT NOW';printStatus.textContent='ถ้าเชื่อม Wi‑Fi แล้ว กด PRINT NOW เพื่อเลือกเครื่องพิมพ์'}});
 
 updateText();
-setBadgeSize(58);
 </script>
 </body>
 </html>
