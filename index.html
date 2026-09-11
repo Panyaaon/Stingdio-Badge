@@ -108,6 +108,18 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
   outline-offset:6px;
 }
 
+
+
+.bg-controls{margin-top:10px;padding:12px;border:1.5px solid #111;border-radius:16px;background:#fff}
+.bg-control-row{margin-bottom:12px}
+.bg-control-row:last-of-type{margin-bottom:10px}
+.bg-control-row>label,.bg-label-line label{display:block;font-size:12px;font-weight:900;margin-bottom:5px}
+.bg-label-line{display:flex;align-items:center;justify-content:space-between}
+.bg-label-line span{font-size:11px;font-weight:800;opacity:.65}
+.bg-controls input[type=range]{width:100%;accent-color:#111}
+.bg-center-btn{width:100%;border:1.5px solid #111;border-radius:12px;background:#fff;padding:9px 12px;font-weight:900;letter-spacing:.4px}
+.bg-move-grid{grid-template-rows:repeat(3,38px)}
+
 </style>
 </head>
 <body>
@@ -127,7 +139,32 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
       </div>
     </div>
 
-    <div class="field"><label>อัปโหลดรูปหลัก</label><input id="photoUpload" type="file" accept="image/*"></div>
+    <div class="field"><label>อัปโหลดรูปหลัก</label><input id="photoUpload" type="file" accept="image/*">
+
+<div class="bg-controls">
+  <div class="bg-control-row">
+    <label>BACKGROUND ZOOM</label>
+    <input id="bgZoom" type="range" min="0.5" max="4" value="1" step="0.01">
+  </div>
+
+  <div class="bg-control-row">
+    <div class="bg-label-line">
+      <label>POSITION X</label>
+      <span id="bgXValue">0</span>
+    </div>
+    <input id="bgX" type="range" min="-120" max="120" value="0" step="1">
+  </div>
+
+  <div class="bg-control-row">
+    <div class="bg-label-line">
+      <label>POSITION Y</label>
+      <span id="bgYValue">0</span>
+    </div>
+    <input id="bgY" type="range" min="-120" max="120" value="0" step="1">
+  </div>
+
+  <button type="button" id="bgCenter" class="bg-center-btn">CENTER</button>
+</div></div>
     <div class="field"><label>ข้อความ</label><input id="textInput" type="text" placeholder="เช่น LOVE YOU / รักนะ"></div>
 
     
@@ -327,6 +364,7 @@ document.getElementById('photoUpload').addEventListener('change',e=>{
       photo.style.left='50%';
       photo.style.top='50%';
       base={x:0,y:0,scale:1,rotation:0};
+      bgZoom.value='1'; bgX.value='0'; bgY.value='0'; bgXValue.textContent='0'; bgYValue.textContent='0';
       updateBase();
     };
     photo.src=ev.target.result;
@@ -335,40 +373,41 @@ document.getElementById('photoUpload').addEventListener('change',e=>{
 });
 function updateBase(){photo.style.transform=`translate(calc(-50% + ${base.x}px),calc(-50% + ${base.y}px)) scale(${base.scale}) rotate(${base.rotation}deg)`}
 
-stage.addEventListener('pointerdown',e=>{
-  if(e.target.classList.contains('place')||e.target.id==='textObject'||!photo.src)return;
-  deselectAll();
-  stage.setPointerCapture(e.pointerId);
-  basePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(basePointers.size===1){
-    const p=[...basePointers.values()][0];
-    baseStart={px:p.x,py:p.y,x:base.x,y:base.y,scale:base.scale,rotation:base.rotation};
-  }else if(basePointers.size===2){
-    const pts=[...basePointers.values()];
-    baseStart={distance:distance(pts[0],pts[1]),angle:angle(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x:base.x,y:base.y,scale:base.scale,rotation:base.rotation};
-  }
+const bgZoom=document.getElementById('bgZoom');
+const bgX=document.getElementById('bgX');
+const bgY=document.getElementById('bgY');
+const bgXValue=document.getElementById('bgXValue');
+const bgYValue=document.getElementById('bgYValue');
+const bgCenter=document.getElementById('bgCenter');
+
+bgZoom.addEventListener('input',()=>{
+  base.scale=+bgZoom.value;
+  updateBase();
 });
-stage.addEventListener('pointermove',e=>{
-  if(!basePointers.has(e.pointerId))return;
-  basePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(basePointers.size===1){
-    const p=[...basePointers.values()][0];
-    base.x=baseStart.x+(p.x-baseStart.px); base.y=baseStart.y+(p.y-baseStart.py); updateBase();
-  }else if(basePointers.size===2){
-    const pts=[...basePointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
-    base.scale=clamp(baseStart.scale*(d/baseStart.distance),.25,6);
-    base.rotation=baseStart.rotation+(a-baseStart.angle);
-    base.x=baseStart.x+(m.x-baseStart.midpoint.x); base.y=baseStart.y+(m.y-baseStart.midpoint.y); updateBase();
-  }
+bgX.addEventListener('input',()=>{
+  base.x=+bgX.value;
+  bgXValue.textContent=bgX.value;
+  updateBase();
 });
-function endBase(e){
-  basePointers.delete(e.pointerId);
-  if(basePointers.size===1){
-    const p=[...basePointers.values()][0];
-    baseStart={px:p.x,py:p.y,x:base.x,y:base.y,scale:base.scale,rotation:base.rotation};
-  }else if(basePointers.size===0){baseStart=null}
-}
-stage.addEventListener('pointerup',endBase); stage.addEventListener('pointercancel',endBase);
+bgY.addEventListener('input',()=>{
+  base.y=+bgY.value;
+  bgYValue.textContent=bgY.value;
+  updateBase();
+});
+bgCenter.addEventListener('click',()=>{
+  base.x=0;
+  base.y=0;
+  bgX.value='0';
+  bgY.value='0';
+  bgXValue.textContent='0';
+  bgYValue.textContent='0';
+  updateBase();
+});
+
+
+
+// Background touch gestures disabled: background is locked.
+
 
 /* Text object */
 let txt={x:50,y:50,scale:1,rotation:0};
@@ -612,7 +651,7 @@ function selectSticker(el){deselectAll();selectedSticker=el;selectedTarget=el;el
 function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null;selectedTarget=null;deleteHandle.classList.remove('show')}
 /* Reset */
 function resetAll(){
-  base={x:0,y:0,scale:1,rotation:0}; updateBase();
+  base={x:0,y:0,scale:1,rotation:0}; bgZoom.value='1'; bgX.value='0'; bgY.value='0'; bgXValue.textContent='0'; bgYValue.textContent='0'; updateBase();
   txt={x:50,y:50,scale:1,rotation:0};
   textInput.value=''; textColor.value='#111111'; shadowColor.value='#ff8fbd'; shadowDistance.value='4'; shadowAngle.value='45'; shadowBlur.value='2';
   fontSelect.selectedIndex=0; updateText();
