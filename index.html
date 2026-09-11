@@ -110,14 +110,15 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
 
 
 
-.bg-controls{margin-top:10px;padding:12px;border:1.5px solid #111;border-radius:16px;background:#fff}
-.bg-control-row{margin-bottom:12px}
-.bg-control-row:last-of-type{margin-bottom:10px}
-.bg-control-row>label,.bg-label-line label{display:block;font-size:12px;font-weight:900;margin-bottom:5px}
-.bg-label-line{display:flex;align-items:center;justify-content:space-between}
-.bg-label-line span{font-size:11px;font-weight:800;opacity:.65}
-.bg-controls input[type=range]{width:100%;accent-color:#111}
-.bg-center-btn{width:100%;border:1.5px solid #111;border-radius:12px;background:#fff;padding:9px 12px;font-weight:900;letter-spacing:.4px}
+
+.bg-controls{margin-top:10px;padding:10px;border:1.5px solid #111;border-radius:16px;background:#fff}
+.bg-controls-inline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+.bg-control-row{margin:0;min-width:0}
+.bg-control-row>label,.bg-label-line label{display:block;font-size:10px;font-weight:900;margin-bottom:5px;white-space:nowrap}
+.bg-label-line{display:flex;align-items:center;justify-content:space-between;gap:3px}
+.bg-label-line span{font-size:9px;font-weight:800;opacity:.6}
+.bg-controls input[type=range]{width:100%;margin:0;accent-color:#111}
+
 .bg-move-grid{grid-template-rows:repeat(3,38px)}
 
 </style>
@@ -141,7 +142,7 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
 
     <div class="field"><label>อัปโหลดรูปหลัก</label><input id="photoUpload" type="file" accept="image/*">
 
-<div class="bg-controls">
+<div class="bg-controls bg-controls-inline">
   <div class="bg-control-row">
     <label>BACKGROUND ZOOM</label>
     <input id="bgZoom" type="range" min="0.5" max="4" value="1" step="0.01">
@@ -162,8 +163,6 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
     </div>
     <input id="bgY" type="range" min="-120" max="120" value="0" step="1">
   </div>
-
-  <button type="button" id="bgCenter" class="bg-center-btn">CENTER</button>
 </div></div>
     <div class="field"><label>ข้อความ</label><input id="textInput" type="text" placeholder="เช่น LOVE YOU / รักนะ"></div>
 
@@ -378,7 +377,6 @@ const bgX=document.getElementById('bgX');
 const bgY=document.getElementById('bgY');
 const bgXValue=document.getElementById('bgXValue');
 const bgYValue=document.getElementById('bgYValue');
-const bgCenter=document.getElementById('bgCenter');
 
 bgZoom.addEventListener('input',()=>{
   base.scale=+bgZoom.value;
@@ -392,15 +390,6 @@ bgX.addEventListener('input',()=>{
 bgY.addEventListener('input',()=>{
   base.y=+bgY.value;
   bgYValue.textContent=bgY.value;
-  updateBase();
-});
-bgCenter.addEventListener('click',()=>{
-  base.x=0;
-  base.y=0;
-  bgX.value='0';
-  bgY.value='0';
-  bgXValue.textContent='0';
-  bgYValue.textContent='0';
   updateBase();
 });
 
@@ -665,9 +654,25 @@ async function renderCanvas(){
   deselectAll();
   const px=Math.round(BADGE_MM/25.4*300),c=document.getElementById('canvas'),ctx=c.getContext('2d');
   c.width=c.height=px;
-  ctx.save();ctx.beginPath();ctx.arc(px/2,px/2,px/2,0,Math.PI*2);ctx.clip();ctx.fillStyle='#eee';ctx.fillRect(0,0,px,px);
+
+  // Keep EVERYTHING inside the round badge area.
+  // Pixels outside the circle remain transparent in the saved PNG.
+  ctx.clearRect(0,0,px,px);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(px/2,px/2,px/2,0,Math.PI*2);
+  ctx.closePath();
+  ctx.clip();
+
+  // Draw background photo inside its own transform state,
+  // while preserving the outer circular clipping mask.
   const f=px/stage.clientWidth,pw=parseFloat(photo.style.width)*f,ph=parseFloat(photo.style.height)*f;
-  ctx.translate(px/2+base.x*f,px/2+base.y*f);ctx.rotate(base.rotation*Math.PI/180);ctx.scale(base.scale,base.scale);ctx.drawImage(photo,-pw/2,-ph/2,pw,ph);ctx.restore();
+  ctx.save();
+  ctx.translate(px/2+base.x*f,px/2+base.y*f);
+  ctx.rotate(base.rotation*Math.PI/180);
+  ctx.scale(base.scale,base.scale);
+  ctx.drawImage(photo,-pw/2,-ph/2,pw,ph);
+  ctx.restore();
 
   const text=textInput.value.trim();
   if(text){
@@ -700,6 +705,8 @@ async function renderCanvas(){
       ctx.save();ctx.translate(x,y);ctx.rotate(r*Math.PI/180);ctx.font=`${Math.round(px*.115*s)}px Arial`;ctx.fillText(el.textContent,0,0);ctx.restore();
     }
   }
+  // End the circular clipping mask only after photo, text and all stickers are drawn.
+  ctx.restore();
   return c;
 }
 async function savePNG(){
