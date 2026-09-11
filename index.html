@@ -96,6 +96,17 @@ button{font:inherit;border:2px solid #111;background:#fff;border-radius:13px;pad
   #printArea{display:flex!important;position:absolute;left:0;top:0;width:100%;justify-content:center;padding-top:10mm}
   #printImg{width:58mm;height:58mm;object-fit:contain}
 }
+
+.place,#textObject{
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.place.selected,#textObject.selected{
+  outline:2px dashed rgba(0,0,0,.65);
+  outline-offset:4px;
+}
+
 </style>
 </head>
 <body>
@@ -254,6 +265,16 @@ function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function midpoint(a,b){return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
 function angle(a,b){return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
 
+function clampToCircleCenter(x,y){
+  const dx=x-50,dy=y-50;
+  const d=Math.hypot(dx,dy);
+  const maxR=47;
+  if(d<=maxR)return {x,y};
+  const k=maxR/d;
+  return {x:50+dx*k,y:50+dy*k};
+}
+
+
 function updateDeleteHandle(){
   if(!selectedTarget){
     deleteHandle.classList.remove('show');
@@ -377,44 +398,15 @@ function updateText(){
 [textInput,fontSelect,textColor,shadowColor,shadowDistance,shadowAngle,shadowBlur].forEach(el=>el.addEventListener('input',updateText));
 fontSelect.addEventListener('change',updateText);
 
+
 textObject.addEventListener('pointerdown',e=>{
   if(!textInput.value.trim())return;
-  e.stopPropagation(); deselectAll(); textObject.classList.add('selected'); selectedTarget=textObject; updateDeleteHandle();
-  textObject.setPointerCapture(e.pointerId);
-  txtPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(txtPointers.size===1){
-    const p=[...txtPointers.values()][0];
-    txtStart={px:p.x,py:p.y,x:txt.x,y:txt.y,scale:txt.scale,rotation:txt.rotation};
-  }else if(txtPointers.size===2){
-    const pts=[...txtPointers.values()];
-    txtStart={distance:distance(pts[0],pts[1]),angle:angle(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x:txt.x,y:txt.y,scale:txt.scale,rotation:txt.rotation};
-  }
+  e.stopPropagation();
+  deselectAll();
+  textObject.classList.add('selected');
+  selectedTarget=textObject;
+  updateDeleteHandle();
 });
-textObject.addEventListener('pointermove',e=>{
-  if(!txtPointers.has(e.pointerId))return;
-  txtPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  const r=stage.getBoundingClientRect();
-  if(txtPointers.size===1){
-    const p=[...txtPointers.values()][0];
-    txt.x=clamp(txtStart.x+(p.x-txtStart.px)/r.width*100,0,100);
-    txt.y=clamp(txtStart.y+(p.y-txtStart.py)/r.height*100,0,100);
-  }else if(txtPointers.size===2){
-    const pts=[...txtPointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
-    txt.scale=clamp(txtStart.scale*(d/txtStart.distance),.25,5);
-    txt.rotation=txtStart.rotation+(a-txtStart.angle);
-    txt.x=clamp(txtStart.x+(m.x-txtStart.midpoint.x)/r.width*100,0,100);
-    txt.y=clamp(txtStart.y+(m.y-txtStart.midpoint.y)/r.height*100,0,100);
-  }
-  updateText(); updateDeleteHandle();
-});
-function endTxt(e){
-  txtPointers.delete(e.pointerId);
-  if(txtPointers.size===1){
-    const p=[...txtPointers.values()][0];
-    txtStart={px:p.x,py:p.y,x:txt.x,y:txt.y,scale:txt.scale,rotation:txt.rotation};
-  }else if(txtPointers.size===0){txtStart=null}
-}
-textObject.addEventListener('pointerup',endTxt); textObject.addEventListener('pointercancel',endTxt);
 
 
 document.getElementById('stickerUpload').addEventListener('change',e=>{
@@ -448,47 +440,124 @@ function addEmoji(emoji){
   layer.appendChild(el); prepareSticker(el); selectSticker(el);
 }
 function prepareSticker(el){
-  el._pointers=new Map(); el._start=null; updateSticker(el);
+  updateSticker(el);
+  el.style.touchAction='none';
   el.addEventListener('pointerdown',e=>{
-    e.stopPropagation(); selectSticker(el); el.setPointerCapture(e.pointerId);
-    el._pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
-    if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s,rotation:r};
-    }else if(el._pointers.size===2){
-      const pts=[...el._pointers.values()];
-      el._start={distance:distance(pts[0],pts[1]),angle:angle(pts[0],pts[1]),midpoint:midpoint(pts[0],pts[1]),x,y,scale:s,rotation:r};
-    }
+    e.stopPropagation();
+    selectSticker(el);
   });
-  el.addEventListener('pointermove',e=>{
-    if(!el._pointers.has(e.pointerId))return;
-    el._pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    const r=stage.getBoundingClientRect();
-    if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0];
-      el.dataset.x=clamp(el._start.x+(p.x-el._start.px)/r.width*100,0,100);
-      el.dataset.y=clamp(el._start.y+(p.y-el._start.py)/r.height*100,0,100);
-    }else if(el._pointers.size===2){
-      const pts=[...el._pointers.values()],d=distance(pts[0],pts[1]),m=midpoint(pts[0],pts[1]),a=angle(pts[0],pts[1]);
-      el.dataset.scale=clamp(el._start.scale*(d/el._start.distance),.25,5);
-      el.dataset.rotation=el._start.rotation+(a-el._start.angle);
-      el.dataset.x=clamp(el._start.x+(m.x-el._start.midpoint.x)/r.width*100,0,100);
-      el.dataset.y=clamp(el._start.y+(m.y-el._start.midpoint.y)/r.height*100,0,100);
-    }
-    updateSticker(el); updateDeleteHandle();
-  });
-  function end(e){
-    el._pointers.delete(e.pointerId);
-    const x=+el.dataset.x,y=+el.dataset.y,s=+el.dataset.scale,r=+(el.dataset.rotation||0);
-    if(el._pointers.size===1){
-      const p=[...el._pointers.values()][0]; el._start={px:p.x,py:p.y,x,y,scale:s,rotation:r};
-    }else if(el._pointers.size===0){el._start=null}
-  }
-  el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
 }
 function updateSticker(el){el.style.left=el.dataset.x+'%';el.style.top=el.dataset.y+'%';el.style.transform=`translate(-50%,-50%) scale(${el.dataset.scale}) rotate(${el.dataset.rotation||0}deg)`}
 function selectSticker(el){deselectAll();selectedSticker=el;selectedTarget=el;el.classList.add('selected');updateDeleteHandle()}
-function deselectAll(){document.querySelectorAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null;selectedTarget=null;deleteHandle.classList.remove('show')}
+function deselectAll(){document.querySelecto
+/* Easy stage-wide gestures for selected text/sticker:
+   1 finger = drag, 2 fingers anywhere in the circle = pinch + rotate */
+const editPointers=new Map();
+let editStart=null;
+
+function targetState(el){
+  if(el===textObject){
+    return {x:txt.x,y:txt.y,scale:txt.scale,rotation:txt.rotation};
+  }
+  return {
+    x:+el.dataset.x,
+    y:+el.dataset.y,
+    scale:+el.dataset.scale,
+    rotation:+(el.dataset.rotation||0)
+  };
+}
+function applyTargetState(el,s){
+  if(el===textObject){
+    txt.x=s.x; txt.y=s.y; txt.scale=s.scale; txt.rotation=s.rotation;
+    updateText();
+  }else{
+    el.dataset.x=s.x;
+    el.dataset.y=s.y;
+    el.dataset.scale=s.scale;
+    el.dataset.rotation=s.rotation;
+    updateSticker(el);
+  }
+  updateDeleteHandle();
+}
+function beginEditGesture(){
+  if(!selectedTarget || editPointers.size===0){editStart=null;return;}
+  const s=targetState(selectedTarget);
+  const pts=[...editPointers.values()];
+  if(editPointers.size===1){
+    editStart={mode:1,px:pts[0].x,py:pts[0].y,...s,target:selectedTarget};
+  }else{
+    editStart={
+      mode:2,
+      distance:Math.max(1,distance(pts[0],pts[1])),
+      angle:angle(pts[0],pts[1]),
+      midpoint:midpoint(pts[0],pts[1]),
+      ...s,
+      target:selectedTarget
+    };
+  }
+}
+
+stage.addEventListener('pointerdown',e=>{
+  if(!selectedTarget)return;
+  if(e.target===deleteHandle)return;
+  // Do not hijack the base photo when no editable object is selected.
+  e.preventDefault();
+  editPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  try{stage.setPointerCapture(e.pointerId)}catch(_){}
+  beginEditGesture();
+},{passive:false});
+
+stage.addEventListener('pointermove',e=>{
+  if(!selectedTarget || !editPointers.has(e.pointerId) || !editStart)return;
+  e.preventDefault();
+  editPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+  // If the selected target changed, restart cleanly.
+  if(editStart.target!==selectedTarget){beginEditGesture();return;}
+
+  const r=stage.getBoundingClientRect();
+  const pts=[...editPointers.values()];
+  const s={x:editStart.x,y:editStart.y,scale:editStart.scale,rotation:editStart.rotation};
+
+  if(editPointers.size===1 && editStart.mode===1){
+    s.x=editStart.x+(pts[0].x-editStart.px)/r.width*100;
+    s.y=editStart.y+(pts[0].y-editStart.py)/r.height*100;
+  }else if(editPointers.size>=2){
+    const p0=pts[0],p1=pts[1];
+    const d=Math.max(1,distance(p0,p1));
+    const a=angle(p0,p1);
+    const m=midpoint(p0,p1);
+
+    // Restart from a proper 2-finger baseline if the second finger was just added.
+    if(editStart.mode!==2){
+      beginEditGesture();
+      return;
+    }
+
+    s.scale=clamp(editStart.scale*(d/editStart.distance),0.15,8);
+    s.rotation=editStart.rotation+(a-editStart.angle);
+    s.x=editStart.x+(m.x-editStart.midpoint.x)/r.width*100;
+    s.y=editStart.y+(m.y-editStart.midpoint.y)/r.height*100;
+  }
+
+  const pos=clampToCircleCenter ? clampToCircleCenter(s.x,s.y) : {x:clamp(s.x,0,100),y:clamp(s.y,0,100)};
+  s.x=pos.x; s.y=pos.y;
+  applyTargetState(selectedTarget,s);
+},{passive:false});
+
+function endEditPointer(e){
+  editPointers.delete(e.pointerId);
+  if(editPointers.size===0){
+    editStart=null;
+  }else{
+    beginEditGesture();
+  }
+}
+stage.addEventListener('pointerup',endEditPointer);
+stage.addEventListener('pointercancel',endEditPointer);
+stage.addEventListener('lostpointercapture',endEditPointer);
+
+rAll('.place.selected').forEach(x=>x.classList.remove('selected'));textObject.classList.remove('selected');selectedSticker=null;selectedTarget=null;deleteHandle.classList.remove('show')}
 /* Reset */
 function resetAll(){
   base={x:0,y:0,scale:1,rotation:0}; updateBase();
